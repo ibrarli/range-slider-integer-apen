@@ -19,7 +19,7 @@
     "budo": "^11.8.4"
   },
   "dependencies": {
-    "input-integer-apen": "^0.0.5",
-    "range-slider-apen": "^0.0.4"
+    "input-integer-apen": "^0.0.7",
+    "range-slider-apen": "^0.0.6"
   }
 }

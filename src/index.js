@@ -4,20 +4,17 @@ const integer = require("input-integer-apen");
 module.exports = range_slider_integer;
 
 function range_slider_integer(opts) {
-  const { id = 0 } = opts; 
   const state = {};
+
   const el = document.createElement("div");
   const shadow = el.attachShadow({ mode: "closed" });
 
   const rsi = document.createElement("div");
   rsi.classList.add("rsi");
 
-  // Unique names for each component
-  const rangeName = `range-${id}`;
-  const inputName = `input-integer-${id}`;
+  const range_slider = range(opts, protocol);
+  const input_integer = integer(opts, protocol);
 
-  const range_slider = range({ ...opts, id }, protocol);
-  const input_integer = integer({ ...opts, id }, protocol);
   rsi.append(range_slider, input_integer);
 
   const style = document.createElement("style");
@@ -28,25 +25,29 @@ function range_slider_integer(opts) {
   return el;
 
   function protocol(message, notify) {
-    const { from } = message;
-    state[from] = { value: 0, notify };
-    return listen;
+    try {
+      const { from } = message;
+      state[from] = { value: 0, notify };
+      return listen;
+    } catch (err) {
+      console.error("Protocol error:", err);
+    }
   }
 
   function listen(message) {
     const { from, type, data } = message;
     state[from].value = data;
-
     if (type === "update") {
-      let notify;
-      if (from === rangeName) notify = state[inputName]?.notify;
-      else if (from === inputName) notify = state[rangeName]?.notify;
-      notify?.({ type, data });
+      var notify;
+      if (from === "range-0") notify = state["input-integer-0"].notify;
+      else if (from === "input-integer-0") notify = state["range-0"].notify;
+      notify({ type, data });
     }
   }
+}
 
-  function get_theme() {
-    return `
+function get_theme() {
+  return `
     .rsi {
       padding: 1.5rem;
       display: grid;
@@ -66,5 +67,4 @@ function range_slider_integer(opts) {
       box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
     }
   `;
-  }
 }

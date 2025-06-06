@@ -13,10 +13,13 @@ const sheet = new CSSStyleSheet();
 const theme = get_theme();
 sheet.replaceSync(theme);
 
+var id = 0;
+
 // main function
-function inputInteger(opts) {
+function inputInteger(opts, protocol) {
   const { min, max, id = 0 } = opts;
-  const name = `input-integer-${id}`;
+
+  const name = `input-integer-${id++}`;
 
   const notify = protocol({ from: name }, listen);
 
@@ -43,6 +46,28 @@ function inputInteger(opts) {
   shadow.adoptedStyleSheets = [sheet];
 
   return el;
+
+  function handle_onkeyup(e, input, min, max) {
+    const val = Number(e.target.value);
+    const val_len = val.toString().length;
+    const min_len = min.toString().length;
+
+    if (max < val) {
+      input.value = max;
+    } else if (val_len === min_len && min > val) {
+      input.value = min;
+    }
+
+    notify({ from: name, type: "update", data: val });
+  }
+
+  function handle_onmouseleave_and_blur(e, input, min) {
+    const val = Number(e.target.value);
+
+    if (min > val) {
+      input.value = "";
+    }
+  }
 }
 
 function get_theme() {
@@ -82,40 +107,15 @@ function get_theme() {
   `;
 }
 
-function handle_onkeyup(e, input, min, max) {
-  const val = Number(e.target.value);
-  const val_len = val.toString().length;
-  const min_len = min.toString().length;
-
-  if (max < val) {
-    input.value = max;
-  } else if (val_len === min_len && min > val) {
-    input.value = min;
-  }
-
-  notify({ from: name, type: "update", data: val });
-}
-
-function handle_onmouseleave_and_blur(e, input, min) {
-  const val = Number(e.target.value);
-
-  if (min > val) {
-    input.value = "";
-  }
-}
-
 },{}],3:[function(require,module,exports){
 module.exports = rangeSlider;
 
 var id = 0;
 
 function rangeSlider(opts, protocol) {
-  const { min = 0, max = 500, id = 0 } = opts;
-  const name = `range-${id}`;
+  const { min = 0, max = 1000 } = opts;
 
-  const el = document.createElement("div");
-  el.classList.add("container");
-  const shadow = el.attachShadow({ mode: "closed" });
+  const name = `range-${id++}`;
 
   const notify = protocol({ from: name }, listen);
 
@@ -127,6 +127,9 @@ function rangeSlider(opts, protocol) {
       input.focus();
     }
   }
+  const el = document.createElement("div");
+  el.classList.add("container");
+  const shadow = el.attachShadow({ mode: "closed" });
 
   const input = document.createElement("input");
   input.type = "range";
@@ -153,8 +156,15 @@ function rangeSlider(opts, protocol) {
   shadow.append(style, input, bar);
   return el;
 
-  function get_theme() {
-    return `
+  function handle_input(e) {
+    const val = Number(e.target.value);
+    fill.style.width = `${(val / max) * 100}%`;
+    notify({ from: name, type: "update", data: val });
+  }
+}
+
+function get_theme() {
+  return `
   :host { box-sizing: border-box; }
   *, *:before, *:after { box-sizing: inherit; }
   :host {
@@ -243,13 +253,6 @@ function rangeSlider(opts, protocol) {
     box-shadow: 0 0 0 14px rgba(94, 176, 245, .8);
   }
   `;
-  }
-
-  function handle_input(e) {
-    const val = Number(e.target.value);
-    fill.style.width = `${(val / max) * 100}%`;
-    notify({ from: name, type: "update", data: val });
-  }
 }
 
 },{}],4:[function(require,module,exports){
@@ -259,20 +262,17 @@ const integer = require("input-integer-apen");
 module.exports = range_slider_integer;
 
 function range_slider_integer(opts) {
-  const { id = 0 } = opts; 
   const state = {};
+
   const el = document.createElement("div");
   const shadow = el.attachShadow({ mode: "closed" });
 
   const rsi = document.createElement("div");
   rsi.classList.add("rsi");
 
-  // Unique names for each component
-  const rangeName = `range-${id}`;
-  const inputName = `input-integer-${id}`;
+  const range_slider = range(opts, protocol);
+  const input_integer = integer(opts, protocol);
 
-  const range_slider = range({ ...opts, id }, protocol);
-  const input_integer = integer({ ...opts, id }, protocol);
   rsi.append(range_slider, input_integer);
 
   const style = document.createElement("style");
@@ -283,25 +283,29 @@ function range_slider_integer(opts) {
   return el;
 
   function protocol(message, notify) {
-    const { from } = message;
-    state[from] = { value: 0, notify };
-    return listen;
+    try {
+      const { from } = message;
+      state[from] = { value: 0, notify };
+      return listen;
+    } catch (err) {
+      console.error("Protocol error:", err);
+    }
   }
 
   function listen(message) {
     const { from, type, data } = message;
     state[from].value = data;
-
     if (type === "update") {
-      let notify;
-      if (from === rangeName) notify = state[inputName]?.notify;
-      else if (from === inputName) notify = state[rangeName]?.notify;
-      notify?.({ type, data });
+      var notify;
+      if (from === "range-0") notify = state["input-integer-0"].notify;
+      else if (from === "input-integer-0") notify = state["range-0"].notify;
+      notify({ type, data });
     }
   }
+}
 
-  function get_theme() {
-    return `
+function get_theme() {
+  return `
     .rsi {
       padding: 1.5rem;
       display: grid;
@@ -321,7 +325,6 @@ function range_slider_integer(opts) {
       box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
     }
   `;
-  }
 }
 
 },{"input-integer-apen":2,"range-slider-apen":3}]},{},[1]);
