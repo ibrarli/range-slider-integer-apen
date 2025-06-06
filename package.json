@@ -1,0 +1,25 @@
+{
+  "name": "range-slider-integer-apen",
+  "version": "0.0.1",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "budo demo/demo.js:bundle.js --live --open",
+    "build": "browserify demo/demo.js > bundle.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ibrarli/range-slider-integer-apen.git"
+  },
+  "author": "ali",
+  "license": "MIT",
+  "devDependencies": {
+    "browserify": "^17.0.1",
+    "budo": "^11.8.4"
+  },
+  "dependencies": {
+    "input-integer-apen": "^0.0.5",
+    "range-slider-apen": "^0.0.4"
+  }
+}
