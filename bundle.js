@@ -6,66 +6,66 @@ const rsi = range_slider_integer(opts);
 document.body.append(rsi);
 
 },{"..":4}],2:[function(require,module,exports){
-module.exports = inputInteger;
+module.exports = inputInteger
 
 //CSS Styling
-const sheet = new CSSStyleSheet();
-const theme = get_theme();
-sheet.replaceSync(theme);
+const sheet = new CSSStyleSheet()
+const theme = get_theme()
+sheet.replaceSync(theme)
 
 var id = 0;
 
 // main function
 function inputInteger(opts, protocol) {
-  const { min, max, id = 0 } = opts;
+  const { min = 0, max = 1000} = opts
 
-  const name = `input-integer-${id++}`;
+  const name = `input-integer-${id++}`
 
-  const notify = protocol({ from: name }, listen);
+  const notify = protocol({ from: name }, listen)
 
   function listen(message) {
-    const { type, data } = message;
+    const { type, data } = message
     if (type === "update") {
-      input.value = data;
+      input.value = data
     }
   }
 
-  const el = document.createElement("div");
-  const shadow = el.attachShadow({ mode: "closed" });
-  const input = document.createElement("input");
+  const el = document.createElement("div")
+  const shadow = el.attachShadow({ mode: 'closed' })
+  let input = document.createElement('input')
 
-  input.type = "number";
-  input.min = min;
-  input.max = max;
-  input.onkeyup = (e) => handle_onkeyup(e, input, min, max);
-  input.onmouseleave = (e) => handle_onmouseleave_and_blur(e, input, min);
-  input.onblur = (e) => handle_onmouseleave_and_blur(e, input, min);
+  input.type = 'number'
+  input.min = min
+  input.max = max
+  input.onkeyup = (e) => handle_onkeyup(e, input, min, max)
+  input.onmouseleave = (e) => handle_onmouseleave_and_blur(e, input, min)
+  input.onblur = (e) => handle_onmouseleave_and_blur(e, input, min)
 
-  shadow.append(input);
+  shadow.append(input)
 
-  shadow.adoptedStyleSheets = [sheet];
+  shadow.adoptedStyleSheets = [sheet]
 
-  return el;
+  return el
 
   function handle_onkeyup(e, input, min, max) {
-    const val = Number(e.target.value);
-    const val_len = val.toString().length;
-    const min_len = min.toString().length;
+    const val = Number(e.target.value)
+    const val_len = val.toString().length
+    const min_len = min.toString().length
 
     if (max < val) {
-      input.value = max;
+      input.value = max
     } else if (val_len === min_len && min > val) {
-      input.value = min;
+      input.value = min
     }
 
-    notify({ from: name, type: "update", data: val });
+    notify({ from: name, type: 'update', data: val })
   }
 
   function handle_onmouseleave_and_blur(e, input, min) {
-    const val = Number(e.target.value);
+    const val = Number(e.target.value)
 
     if (min > val) {
-      input.value = "";
+      input.value = ' '
     }
   }
 }
@@ -131,7 +131,7 @@ function rangeSlider(opts, protocol) {
   el.classList.add("container");
   const shadow = el.attachShadow({ mode: "closed" });
 
-  const input = document.createElement("input");
+  let input = document.createElement("input");
   input.type = "range";
   input.min = min;
   input.max = max;
@@ -145,7 +145,7 @@ function rangeSlider(opts, protocol) {
   const ruler = document.createElement("div");
   ruler.classList.add("ruler");
 
-  const fill = document.createElement("div");
+  let fill = document.createElement("div");
   fill.classList.add("fill");
 
   bar.append(ruler, fill);
